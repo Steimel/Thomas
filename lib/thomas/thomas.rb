@@ -1,13 +1,15 @@
 module Thomas
   class Thomas
     QUIT_CHAR = 'q'
+    PAUSE_CHAR = 'p'
 
-    attr_accessor :canvas, :output_buffer
+    attr_accessor :canvas, :output_buffer, :log_file
 
     def initialize(width, height, options={})
       @canvas = Canvas.new(width, height)
       @output_buffer = options.key?(:output_buffer) ? options[:output_buffer] : STDOUT
       @refresh_period = options.key?(:refresh_period) ? options[:refresh_period] : 1.0/20.0
+      @log_file = options.key?(:log_file) ? options[:log_file] : nil
     end
 
     def full_clear
@@ -59,24 +61,46 @@ module Thomas
       end
     end
 
-    def start
-      full_clear
-      refresh_thread = Thread.new {
-        while true do
-          clear
-          draw
-          sleep(@refresh_period)
-          tick
-        end
-      }
-      char = nil
-      until char == QUIT_CHAR
-        char = Util::read_char
-        inputtable_things.each do |thing|
-          thing.handle_input(char)
+
+    def log(message)
+      unless @log_file.nil?
+        File.open(@log_file, 'a') do |f|
+          f.write(Time.now.to_s + ': ' + message + "\n")
         end
       end
-      refresh_thread.kill
+    end
+
+    def start
+      char = nil
+      log('Starting Thomas')
+      until char == QUIT_CHAR
+        char = nil
+        full_clear
+        refresh_thread = Thread.new {
+          while true do
+            clear
+            draw
+            sleep(@refresh_period)
+            tick
+          end
+        }
+        until char == QUIT_CHAR || char == PAUSE_CHAR
+          char = Util::read_char
+          inputtable_things.each do |thing|
+            thing.handle_input(char)
+          end
+        end
+        refresh_thread.kill
+        if char == PAUSE_CHAR
+          log('Pausing')
+          char = nil
+          until char == QUIT_CHAR || char == PAUSE_CHAR
+            char = Util::read_char
+          end
+          log('Unpausing') if char == PAUSE_CHAR
+        end
+      end
+      log('Stopping Thomas')
     end
 
   end

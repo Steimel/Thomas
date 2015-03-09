@@ -15,7 +15,7 @@ class Avoidance
   EDGE_AVOID = 8
 
   def initialize(width=81, height=41, seconds_per_throw=1.0/15.0, max_speed=25)
-    @thomas = Thomas::Thomas.new(width,height)
+    @thomas = Thomas::Thomas.new(width,height,{:log_file => File.dirname(__FILE__) + '/thomas.log'})
     @instruction_txt = Thomas::Textbox.new(INSTRUCTIONS.length,1,INSTRUCTIONS)
     @hiscore_txt = Thomas::Textbox.new(width - INSTRUCTIONS.length - 2,1,get_highscore_text)
     @ship = Ship.new
