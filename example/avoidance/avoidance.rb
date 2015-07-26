@@ -15,7 +15,8 @@ class Avoidance
   EDGE_AVOID = 8
 
   def initialize(width=81, height=41, seconds_per_throw=1.0/15.0, max_speed=25)
-    @thomas = Thomas::Thomas.new(width,height,{:log_file => File.dirname(__FILE__) + '/thomas.log'})
+    @buffer = Thomas::ThomasStream.new
+    @thomas = Thomas::Thomas.new(width,height,{:log_file => File.dirname(__FILE__) + '/thomas.log', :input_stream => @buffer})
     @instruction_txt = Thomas::Textbox.new(INSTRUCTIONS.length,1,INSTRUCTIONS)
     @hiscore_txt = Thomas::Textbox.new(width - INSTRUCTIONS.length - 2,1,get_highscore_text)
     @ship = Ship.new
@@ -92,6 +93,10 @@ class Avoidance
 
   def play
     @thomas.start
+    until @thomas.killed?
+      char = Thomas::Util::read_char_from_stdin
+      @buffer.put_character(char)
+    end
     update_highscore
   end
 end

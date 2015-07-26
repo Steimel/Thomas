@@ -7,9 +7,20 @@ module Thomas
 
     def initialize(width, height, options={})
       @canvas = Canvas.new(width, height)
+      @input_stream = options[:input_stream]
       @output_buffer = options.key?(:output_buffer) ? options[:output_buffer] : STDOUT
       @refresh_period = options.key?(:refresh_period) ? options[:refresh_period] : 1.0/20.0
       @log_file = options.key?(:log_file) ? options[:log_file] : nil
+      @paused = false
+      @killed = false
+    end
+
+    def killed?
+      @killed
+    end
+
+    def paused?
+      @paused
     end
 
     def full_clear
@@ -71,36 +82,61 @@ module Thomas
     end
 
     def start
-      char = nil
       log('Starting Thomas')
-      until char == QUIT_CHAR
-        char = nil
-        full_clear
-        refresh_thread = Thread.new {
-          while true do
-            clear
-            draw
-            sleep(@refresh_period)
-            tick
-          end
-        }
-        until char == QUIT_CHAR || char == PAUSE_CHAR
-          char = Util::read_char
-          inputtable_things.each do |thing|
-            thing.handle_input(char)
-          end
+      start_refresh_thread
+      start_listening_for_input
+    end
+
+    def start_refresh_thread
+      full_clear
+      @refresh_thread = Thread.new {
+        while true do
+          clear
+          draw
+          sleep(@refresh_period)
+          tick
         end
-        refresh_thread.kill
-        if char == PAUSE_CHAR
-          log('Pausing')
-          char = nil
-          until char == QUIT_CHAR || char == PAUSE_CHAR
-            char = Util::read_char
-          end
-          log('Unpausing') if char == PAUSE_CHAR
+      }
+    end
+
+    def stop_refresh_thread
+      @refresh_thread.kill
+    end
+
+    def start_listening_for_input
+      @input_stream.listen(self, :handle_input)
+    end
+
+    def stop_listening_for_input
+      @input_stream.stop_listening(self)
+    end
+
+    def handle_input(char)
+      return if @killed
+
+      unless @paused
+        inputtable_things.each do |thing|
+          thing.handle_input(char)
         end
       end
-      log('Stopping Thomas')
+
+      case char
+        when PAUSE_CHAR
+          if @paused
+            log('Unpausing')
+            @paused = false
+            start_refresh_thread
+          else
+            log('Pausing')
+            @paused = true
+            stop_refresh_thread
+          end
+        when QUIT_CHAR
+          log('Stopping Thomas')
+          stop_refresh_thread
+          stop_listening_for_input
+          @killed = true
+      end
     end
 
   end

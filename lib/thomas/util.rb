@@ -64,7 +64,7 @@ module Thomas
 
 
     # read a character without pressing enter and without printing to the screen
-    def self.read_char
+    def self.read_char_from_stdin
       begin
         # save previous state of stty
         old_state = `stty -g`
