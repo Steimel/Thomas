@@ -14,10 +14,10 @@ module Thomas
       end
     end
 
-    def put_character(chr)
+    def put_character(chr, metadata=nil)
       return if chr.nil?
       @listeners.each do |listener_data|
-        listener_data[:listener].send(listener_data[:method], chr)
+        listener_data[:listener].send(listener_data[:method], chr, metadata)
       end
     end
   end

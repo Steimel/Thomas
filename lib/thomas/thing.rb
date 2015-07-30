@@ -39,7 +39,7 @@ module Thomas
       # noop for generic thing
     end
 
-    def handle_input(char)
+    def handle_input(char, metadata)
       # noop for generic thing
     end
 

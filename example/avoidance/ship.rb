@@ -23,7 +23,7 @@ class Ship < Thomas::Thing
     @score = 0
   end
 
-  def handle_input(char)
+  def handle_input(char, metadata)
     dchar = char.downcase
     return @game.restart if dchar == 'r'
     return unless @alive

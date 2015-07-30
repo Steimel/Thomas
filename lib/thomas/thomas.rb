@@ -7,12 +7,24 @@ module Thomas
 
     def initialize(width, height, options={})
       @canvas = Canvas.new(width, height)
-      @input_stream = options[:input_stream]
+      @input_stream = ThomasStream.new
       @output_buffer = options.key?(:output_buffer) ? options[:output_buffer] : STDOUT
       @refresh_period = options.key?(:refresh_period) ? options[:refresh_period] : 1.0/20.0
       @log_file = options.key?(:log_file) ? options[:log_file] : nil
+      @started = false
       @paused = false
       @killed = false
+      @controllers = []
+    end
+
+    def add_controller(controller)
+      @controllers.push(controller)
+      controller.plug_into(@input_stream)
+    end
+
+    def remove_controller(controller)
+      removed = @controllers.delete(controller)
+      removed.unplug unless removed.nil?
     end
 
     def killed?
@@ -21,6 +33,10 @@ module Thomas
 
     def paused?
       @paused
+    end
+
+    def started?
+      @started
     end
 
     def full_clear
@@ -83,6 +99,7 @@ module Thomas
 
     def start
       log('Starting Thomas')
+      @started = true
       start_refresh_thread
       start_listening_for_input
     end
@@ -105,18 +122,19 @@ module Thomas
 
     def start_listening_for_input
       @input_stream.listen(self, :handle_input)
+      @controllers.each(&:collect_input)
     end
 
     def stop_listening_for_input
       @input_stream.stop_listening(self)
     end
 
-    def handle_input(char)
-      return if @killed
+    def handle_input(char, metadata)
+      return if @killed || !@started
 
       unless @paused
         inputtable_things.each do |thing|
-          thing.handle_input(char)
+          thing.handle_input(char, metadata)
         end
       end
 
@@ -132,10 +150,10 @@ module Thomas
             stop_refresh_thread
           end
         when QUIT_CHAR
+          @killed = true
           log('Stopping Thomas')
           stop_refresh_thread
           stop_listening_for_input
-          @killed = true
       end
     end
 
