@@ -26,4 +26,4 @@ Use the WASD keys to move.
 
 Hit the spacebar to "flash" three spaces forward.
 
-Quit the game by pressing q, and restart by pressing r.
+Quit the game by pressing q, pause by pressing p, and restart by pressing r.
