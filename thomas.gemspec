@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name		= 'thomas'
-  s.version	= '0.0.0'
+  s.version	= '0.1.0'
   s.date		= '2015-03-08'
   s.summary = 'Simple, Ascii-based graphics engine'
   s.description	= 'Simple, Ascii-based graphics engine'

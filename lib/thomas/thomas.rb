@@ -48,7 +48,9 @@ module Thomas
     end
 
     def draw
-      @output_buffer.write(@canvas.draw(true))
+      screen = @canvas.draw(true)
+      @output_buffer.write(screen)
+      @controllers.select{|c| c.kind_of?(NetworkController)}.each{|c| c.refresh_remote_screen(screen) }
     end
 
     def things
@@ -100,8 +102,8 @@ module Thomas
     def start
       log('Starting Thomas')
       @started = true
-      start_refresh_thread
       start_listening_for_input
+      start_refresh_thread
     end
 
     def start_refresh_thread
