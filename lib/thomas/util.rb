@@ -1,5 +1,40 @@
 module Thomas
   class Util
+
+    KEY_SPACEBAR = " "
+    KEY_TAB = "\t"
+    KEY_RETURN = "\r"
+    KEY_LINE_FEED = "\n"
+    KEY_ESCAPE = "\e"
+    KEY_UP_ARROW = "\e[A"
+    KEY_DOWN_ARROW = "\e[B"
+    KEY_RIGHT_ARROW = "\e[C"
+    KEY_LEFT_ARROW = "\e[D"
+    KEY_BACKSPACE = "\177"
+    KEY_DELETE = "\004"
+    KEY_ALTERNATE_DELETE = "\e[3~"
+    KEY_CTRL_C = "\u0003"
+
+    SPECIAL_KEYS = [
+        KEY_SPACEBAR,
+        KEY_TAB,
+        KEY_RETURN,
+        KEY_LINE_FEED,
+        KEY_ESCAPE,
+        KEY_UP_ARROW,
+        KEY_DOWN_ARROW,
+        KEY_RIGHT_ARROW,
+        KEY_LEFT_ARROW,
+        KEY_BACKSPACE,
+        KEY_DELETE,
+        KEY_ALTERNATE_DELETE,
+        KEY_CTRL_C
+    ]
+
+    def self.key_special?(char)
+      SPECIAL_KEYS.include?(char)
+    end
+
     def self.build_box(width, height, obj)
       box = []
       height.times do
@@ -72,16 +107,16 @@ module Thomas
         system "stty raw -echo"
         c = STDIN.getc.chr
         # gather next two characters of special keys
-        #if(c=="\e")
-        #  extra_thread = Thread.new{
-        #    c = c + STDIN.getc.chr
-        #    c = c + STDIN.getc.chr
-        #  }
+        if(c=="\e")
+          extra_thread = Thread.new{
+            c = c + STDIN.getc.chr
+            c = c + STDIN.getc.chr
+          }
           # wait just long enough for special keys to get swallowed
-        #  extra_thread.join(0.00001)
+          extra_thread.join(0.00001)
           # kill thread so not-so-long special keys don't wait on getc
-        #  extra_thread.kill
-        #end
+          extra_thread.kill
+        end
       rescue => ex
         puts "#{ex.class}: #{ex.message}"
         puts ex.backtrace

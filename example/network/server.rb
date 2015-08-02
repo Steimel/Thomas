@@ -10,6 +10,10 @@ class ControlOutputter < Thomas::Thing
   end
 
   def handle_input(char, metadata)
+    char = 'UP' if char == Thomas::Util::KEY_UP_ARROW
+    char = 'DOWN' if char == Thomas::Util::KEY_DOWN_ARROW
+    char = 'LEFT' if char == Thomas::Util::KEY_LEFT_ARROW
+    char = 'RIGHT' if char == Thomas::Util::KEY_RIGHT_ARROW
     @text.set_text(char) if metadata[:id] == @id
   end
 

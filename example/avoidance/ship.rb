@@ -24,28 +24,32 @@ class Ship < Thomas::Thing
   end
 
   def handle_input(char, metadata)
-    dchar = char.downcase
+    dchar = (Thomas::Util.key_special?(char) ? char : char.downcase)
     return @game.restart if dchar == 'r'
     return unless @alive
-    return unless ['w','a','s','d',' '].include?(dchar)
+    return unless ['w','a','s','d',' ',
+                   Thomas::Util::KEY_UP_ARROW,
+                   Thomas::Util::KEY_DOWN_ARROW,
+                   Thomas::Util::KEY_LEFT_ARROW,
+                   Thomas::Util::KEY_RIGHT_ARROW].include?(dchar)
     row = self.get_row
     col = self.get_col
     width = self.canvas.width
     height = self.canvas.height
     case dchar
-      when 'w'
+      when 'w', Thomas::Util::KEY_UP_ARROW
         row -= 1
         set_ship_direction(DIRECTION_UP)
-      when 's'
+      when 's', Thomas::Util::KEY_DOWN_ARROW
         row += 1
         set_ship_direction(DIRECTION_DOWN)
-      when 'a'
+      when 'a', Thomas::Util::KEY_LEFT_ARROW
         col -= 1
         set_ship_direction(DIRECTION_LEFT)
-      when 'd'
+      when 'd', Thomas::Util::KEY_RIGHT_ARROW
         col += 1
         set_ship_direction(DIRECTION_RIGHT)
-      when ' '
+      when Thomas::Util::KEY_SPACEBAR
         row += @direction[0] * SPACE_SPEED
         col += @direction[1] * SPACE_SPEED
     end
